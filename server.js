@@ -27,6 +27,10 @@ app.use(
 );
 
 //routes
+app.all('*',(req,res,next)=>{
+    console.log("next");
+    next();
+});
 app.post('/updateHospitality', asyncWrapper(shelterController.updateHospitality));
 app.post('/showHospitalityByCityAndCapacity', asyncWrapper(shelterController.showHospitalityByCityAndCapacity));
 app.post('/addHospitality',asyncWrapper(shelterController.addHospitality));

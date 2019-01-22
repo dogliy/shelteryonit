@@ -7,23 +7,21 @@ const connection    = require('../db')
 // show all shelters
 module.exports= {
     async showAllShelters(req,res,next){
-            const result=await shelter.find({})
+        const result=await shelter.find({})
             if(result)
             {
-                
                 res.json(result)
             }
             else
             {
-
                     res.status(404).send("not found")
             }
     },
-    //
+
+//show all hospitalities matched by city and capacity(number of people available) 
     async showHospitalityByCityAndCapacity(req,res,next){
     
         const {city= null, capacity =null} =req.body
-        
         const result = await hospitality.find({city,remain:{$lte:capacity}},(err,relevantHospitality)=>{
             if(err){
                 console.log("could not find matching house")
@@ -38,18 +36,19 @@ module.exports= {
         else
             res.status(404).send('not found')
     },
-// add shelter
+
+// add new shelter
     async addShelter(req,res,next){
         if(typeof req.body.lng=="undefined" || typeof req.body.lat=="undefined" || typeof req.body.id=="undefined")
         {
-            res.json('you did not enter lng or lat or id');
+            res.json('lng or lat or id is missing')
         }
         else
         {
             console.log(req.body.id);
-                const result=await citizen.find({id:req.body.id})
+            const result=await citizen.find({id:req.body.id})
 
-                if(result)
+            if(result)
                 {
                     if(result.length<=0)
                     {
@@ -68,43 +67,35 @@ module.exports= {
                                 shelterNUmber=parseInt(shelterResult[i].shelterId);
                                 if(shelterNumber>shelterCount)
                                     shelterCount=shelterNUmber;
-
-
                             }
-                            shelterCount=shelterCount+1;
-
-                            let newShelter=new shelter({
+                            shelterCount = shelterCount+1;
+                            let newShelter = new shelter({
                                 shelterId:shelterCount,
                                 citizenId:req.body.id,
                                 lat:req.body.lat,
                                 lng:req.body.lng,
                                 picturesUrl:[]
                             });
-
                             newShelter.save((err)=>{
-                                    if(err)
-                                        res.json(`there was error with save new shelter: ${err}`);
-                                    else
-                                        res.json(`you add new shelter`);
-
+                                if(err)
+                                    res.json(`could not save new shelter: ${err}`);
+                                else
+                                    res.json('new shelter added successfull')
                             }) 
                         }
                         else
                         {
-                            res.json(`there was problem with find shelter`);
+                            res.json('could not find shelter')
                         }
-        
-                    }
                 }
-                else
-                {
-                    res.json(`there was a problem find`);
-
-                }
+            }
+            else
+            {
+                res.json('could not find citizen')//////////////////////////////////////////////////
+            }
         }
-
-
     },
+
 //find shelters around
     async findCloseShelters(req,res,next){
         const result=await shelter.find({})
@@ -113,17 +104,10 @@ module.exports= {
         console.log(typeof req.query.lng);
         if(((typeof req.query.lat)=="undefined") || ((typeof req.query.lng)=="undefined"))
         {
-            res.send(`you did not send all lat or lng`);
-
-
+            res.send('you did not send all lat or lng')
         }
         else if(result)
         {
-         
-            //console.log(req.qurey.lng);
-
-
-
             var htmlstr="";
             htmlstr=`<!DOCTYPE html>
             <html>
@@ -171,34 +155,34 @@ module.exports= {
             
                 for(let i=0;i<result.length;i++)
                 {
-                     htmlstr+=` var marker = new google.maps.Marker({   position: {lat: `;  
-                     htmlstr+= result[i].lat ; 
-                     htmlstr+=`, lng: ` ;
-                     htmlstr+=result[i].lng;
-                     htmlstr+=`}, map: map, title: 'shelter'});`;
+                    htmlstr+=` var marker = new google.maps.Marker({   position: {lat: `;  
+                    htmlstr+= result[i].lat ; 
+                    htmlstr+=`, lng: ` ;
+                    htmlstr+=result[i].lng;
+                    htmlstr+=`}, map: map, title: 'shelter'});`;
                 }
 
-             htmlstr+=   ` }`;
-             htmlstr+= `</script>
+            htmlstr+=   ` }`;
+            htmlstr+= `</script>
                 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEk19blgki_kfh6LPgQVocoqRfTKYsMXs&callback=initMap"
                 async defer></script>
               </body>
             </html>`;
-            res.send(htmlstr);
-      
+            res.send(htmlstr)
         }
         else
         {
-                res.status(404).send("not found");
+            res.status(404).send('not found')
         }
 
     },
-// update hospitality (searching people and remain)
+
+// update hospitality (insert the searching people  and updating the remain place)
     async updateHospitality(req,res,next){
 
         if(typeof req.body.familyHeadId=="undefined" || typeof req.body.houseId=="undefined" )
         {
-            res.json(`you did not enter family head id or house id`);
+            res.json('family head id or house id is missing');
         }
         else
         {
@@ -208,17 +192,17 @@ module.exports= {
             {
                 if(hospitalityResult.length<=0)
                 {
-                    res.json(`house id not found`);
+                    res.json('house id was not found')
                 }
                 else
                 {
-                    const citizenResult=await citizen.find({id:req.body.familyHeadId});
+                    const citizenResult=await citizen.find({id:req.body.familyHeadId})
 
                     if(citizenResult)
                     {
                         if(citizenResult.length<=0)
                         {
-                            res.json(`family head id not found`);
+                            res.json('family head id was not found')
                         }
                         else
                         {
@@ -226,13 +210,12 @@ module.exports= {
                             if(typeof req.body.peopleArray=="object")
                             {
                                 numberOfPeople=req.body.peopleArray.length;
-
                             }
                             numberOfPeople=numberOfPeople+1;
 
-                            if((hospitalityResult[0].remain-numberOfPeople)<0 )
+                            if((hospitalityResult[0].remain-numberOfPeople)<0)
                             {
-                                    res.json(`too many people`);
+                                res.json('could not add more people')
                             }
                             else
                             {   
@@ -246,110 +229,82 @@ module.exports= {
 
                                 var conditions={houseId:req.body.houseId},
                                     update={$set:{remain:newRemain,searchingPeople:newSearchingPeople}},
-                                    opts={multi:true};
+                                    opts={multi:true}
                                 
                                 hospitality.update(conditions,update,opts,(err)=>{
                                     if(err)
                                     {
-                                        res.json(`update error: ${err}`);
+                                        res.json(`update error: ${err}`)
                                     }
                                     else
                                     {
-                                        res.json(`you add people to hospitality`);
+                                        res.json('adding people to hospitality succeed')
                                     }
-
                                 });
-
                             }
-
-
                         }
-
-
                     }
                     else
                     {
-                        res.json(`there was problem with citizen find`);
-                                        }
-
-
-
-
-
+                        res.json('could not find citizen')
+                    }
                 }
-
-
             }
             else
             {
-                res.json(`there was problem with hospitality find`);
+                res.json('could not find hospitality')
             }
-
-
-
         }
-
-
-       
-
     },
+    
+//add new hospitality
     async addHospitality(req,res,next){
 
         if(typeof req.body.ownerID=="undefined" || typeof req.body.capacity=="undefined" || typeof req.body.city=="undefined" )
         {
-            res.json(`you did not send id or capacity or city`);
+            res.json('id or capacity or city is missing');
 
 
         }
         else
         {
-                const citizenResult=await citizen.find({id:req.body.ownerID});
+            const citizenResult=await citizen.find({id:req.body.ownerID});
 
                 if(citizenResult)
                 {
                     if(citizenResult.length<=0)
                     {
-                        res.json(`id not found try again`);
+                        res.json('id was not found.. please try again')
                     }
                     else
                     {
-                        const hospitalityResult=await hospitality.find({});
+                        const hospitalityResult=await hospitality.find({})
 
                         if(hospitalityResult)
                         {
-                            
-                            var hospitalityCount=0;
+                            var hospitalityCount=0;    
                             var hospitalityNumber=0;
-                           
-
+                        
                             for(let i=0;i<hospitalityResult.length;i++)
                             {
                                 hospitalityNumber= hospitalityResult[i].houseId;
-                                console.log(hospitalityNumber);
+                                console.log(hospitalityNumber)
                                 if(hospitalityCount<hospitalityNumber)
                                     hospitalityCount=hospitalityNumber;
-
                             }
                             hospitalityCount=hospitalityCount+1;
 
-                           var livingPepole=[];
-                           livingPepole.push({id:req.body.ownerID,name:citizenResult[0].name});
+                            var livingPepole=[];
+                            livingPepole.push({id:req.body.ownerID,name:citizenResult[0].name});
                            
-                           
-                           if(typeof req.body.hostingPeople=="object")
-                           {
-                               
+                            if(typeof req.body.hostingPeople=="object")
+                            {
                                 for(let i=0;i<req.body.hostingPeople.length;i++)
                                 {
-                                    livingPepole.push(req.body.hostingPeople[i]);    
-
-
+                                    livingPepole.push(req.body.hostingPeople[i])  
                                 }
-                                   
-
-
-                           }
-                           var newHospitality=new hospitality({
+                            }
+                            var newHospitality=new hospitality({
                                 ownerID:req.body.ownerID,
                                 houseId:hospitalityCount,
                                 capacity:req.body.capacity,
@@ -358,35 +313,29 @@ module.exports= {
                                 city:req.body.city,
                                 pictureUrl:[],
                                 hostingPeople:livingPepole
-                           });
+                            });
 
-                           newHospitality.save((err)=>{
-                                if(err)
-                                {
-                                    res.json(`there was a problem with save: ${err}`);
-                                }
-                                else
-                                {
-                                   res.json(`you add new Hospitality`) ;
-                                }
-
-                           })
-
-                        }
-                        else
-                        {
-                            res.json(`there was problem with hospitality find`);
-                        }
+                            newHospitality.save((err)=>{
+                            if(err)
+                            {
+                                res.json(`there was a problem with save: ${err}`);
+                            }
+                            else
+                            {
+                                res.json('new hospitality added successfully') 
+                            }
+                        })
                     }
-
+                    else
+                    {   
+                        res.json('could not find hospitality')
+                    }
                 }
-                else
-                {
-                    res.json(`there was problem with citizen find`);
-                }
-
+            }
+            else
+            {
+                 res.json('could not find citizen')
+            }
         }
-
     }
-
 }
