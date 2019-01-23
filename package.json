@@ -1,7 +1,7 @@
 {
   "name": "s1",
   "version": "1.0.0",
-  "description": "",
+  "description": "shelteryonit nir and shahar",
   "main": "index.js",
   "dependencies": {
     "express": "^4.16.4",
