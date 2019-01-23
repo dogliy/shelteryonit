@@ -8,7 +8,7 @@ const asyncWrapper      = require('./async.wrapper')
 
 //establish app()
 const app   = express()
-const port  = process.env.PORT || 3000
+const port  = process.env.PORT || 3003;
 
 //middleware
 app.set('port',port)
@@ -26,11 +26,7 @@ app.use(
     }
 );
 
-//routes
-app.all('*',(req,res,next)=>{
-    console.log("next");
-    next();
-});
+
 app.post('/updateHospitality', asyncWrapper(shelterController.updateHospitality));
 app.post('/showHospitalityByCityAndCapacity', asyncWrapper(shelterController.showHospitalityByCityAndCapacity));
 app.post('/addHospitality',asyncWrapper(shelterController.addHospitality));
