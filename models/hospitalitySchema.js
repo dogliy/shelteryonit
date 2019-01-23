@@ -4,7 +4,7 @@ const schema ={
     ownerID:{type:String, index:1},
     houseId:{type:Number, required:true},
     capacity:{type:Number, required:true},
-    occupancy:{type:Number,required:true},
+    remain:{type:Number,required:true},
     searchingPeople:{type:Array, required:true},
     city:{type:String, required:true},
     pictureUrl:{type:Array},

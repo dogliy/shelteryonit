@@ -36,8 +36,6 @@ module.exports= {
         else
             res.status(404).send('not found')
     },
-
-// add new shelter
     async addShelter(req,res,next){
         if(typeof req.body.lng=="undefined" || typeof req.body.lat=="undefined" || typeof req.body.id=="undefined")
         {
@@ -212,7 +210,8 @@ module.exports= {
                                 numberOfPeople=req.body.peopleArray.length;
                             }
                             numberOfPeople=numberOfPeople+1;
-
+                            console.log(hospitalityResult[0].remain);
+                            console.log(numberOfPeople);
                             if((hospitalityResult[0].remain-numberOfPeople)<0)
                             {
                                 res.json('could not add more people')
@@ -222,9 +221,13 @@ module.exports= {
                                 var newRemain=hospitalityResult[0].remain-numberOfPeople;
                                 var newSearchingPeople=hospitalityResult[0].searchingPeople;
                                 newSearchingPeople.push({id:citizenResult[0].id,name:citizenResult[0].name});
+                                if(typeof req.body.peopleArray=="object")
+                                {
+                                    
+                                     for(let i=0;i<req.body.peopleArray.length;i++)
+                                        newSearchingPeople.push(req.body.peopleArray[i]);
+                                }
 
-                                for(let i=0;i<req.body.peopleArray.length;i++)
-                                newSearchingPeople.push(req.body.peopleArray[i]);
 
 
                                 var conditions={houseId:req.body.houseId},
